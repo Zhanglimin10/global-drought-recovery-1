@@ -74,27 +74,6 @@ for i_rt in range(4):
 np.save(path+'_grid_need_cal.npy', arr=grid_need_cal)
 
 #%%
-# # how to use linear regression
-# from sklearn.linear_model import LinearRegression
-# X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-# y = np.dot(X, np.array([1, 2])) + 3
-# reg = LinearRegression().fit(X, y)
-# reg.score(X, y)
-# reg.coef_
-# reg.intercept_
-# reg.predict(np.array([[3, 5]]))
-
-# #%%
-# # method2 use linear_model
-diabetes = datasets.load_diabetes()
-X = diabetes.data
-y = diabetes.target
-X2 = sm.add_constant(X)
-est = sm.OLS(y, X2)
-est2 = est.fit()
-print(est2.summary())
-print(est2.p_values) #p_value
-#%%
 RT=['1-7','8-14','15-21','22-28']
 for phase in['his','pres']:
     region = nc.Dataset(r'E:\phd\data\climate region\region.id.nc', 'r')
