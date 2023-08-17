@@ -88,7 +88,6 @@ def plot_settings():
 font = {'family': 'Myriad Pro',
         'weight': 'normal'}
 # %%
-# 用pcolormesh(比较快），先画一个rt是8-14的夏冬和春秋。
 filename_delta = 'J:\output\prob_season_0811\global\map_delta_sign.npy'
 filename_his = 'J:\output\prob_season_0811\global\map_his_climatology.npy'
 filename_pres = 'J:\output\prob_season_0811\global\map_pres_climatology.npy'
@@ -121,7 +120,7 @@ for i_sea in np.array([0,2]):
     for col in range(3):
         num += 1
         cmap = plt.get_cmap('GnBu')
-        new_cmap = truncate_colormap(cmap, minval=0.2, maxval=1.0, n=100)  # 切除左边特别接近白色的色带
+        new_cmap = truncate_colormap(cmap, minval=0.2, maxval=1.0, n=100)  
         bounds = np.linspace(0, 80, 9)
         norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
@@ -132,8 +131,6 @@ for i_sea in np.array([0,2]):
         elif col == 2:
 
             data = data_delta_sign[:, :, i_rt, i_sea]
-            # data=gaussian_filter(data_1, sigma=0.3)  # sigma取0.3的时候，是上下左右周围一共找到3*3的区域，然后进行滑动。
-
             colors_below = plt.cm.RdBu(np.linspace(0, 0.45, 256))
             colors_over = plt.cm.RdBu(np.linspace(0.55, 1, 256))
             all_colors = np.vstack((colors_below, colors_over))
@@ -384,14 +381,14 @@ def classify_region(RID, coef, neworder):
 
 
 cbformat = mticker.ScalarFormatter()
-cbformat.set_powerlimits((-2, 2))  # Set size thresholds for scientific notation.好像是科学计数法的大小阈值（10^(-2)~10^2)
+cbformat.set_powerlimits((-2, 2))  # Set size thresholds for scientific notation.
 lat = np.arange(89.875, -90, -0.25)
 lon = np.arange(-179.875, 180, 0.25)
 RT = ['1-7', '8-14', '15-21', '22-28']
 sea = ['MAM', 'JJA', 'SON', 'DJF']
 
 # %%
-# 画两种情景下的typical scenario map
+# typical scenario map
 ncolor = ['#C47530', '#8c510a', '#bf812d', '#ffbf80', '#776483', '#222B5F', '#776483', '#3e99a7', '#327355',
           '#003c30']
 neworder = [7, 3, 2, 4, 8, 10, 9, 6, 1, 5]
