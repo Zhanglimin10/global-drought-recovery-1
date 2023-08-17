@@ -11,8 +11,8 @@ importr('copula')
 importr('CDVineCopulaConditional')
 import time
 import mpi
+
 # %%
-#
 def best_fit_distribution(data, jj):
     """Model data by finding best fit distribution to data"""
     if jj == 0:
@@ -46,9 +46,6 @@ def best_fit_distribution(data, jj):
 
                 # Calculate the KS statistic
                 KS = st.kstest(data, distribution.name, params)
-                # res = st.cramervonmises(data, distribution.name, args=params)
-                # cvm = res.pvalue
-                # print(KS)
                 # identify if this distribution is better
                 if best_KS > KS[0] > 0:
                     best_distribution = distribution
@@ -69,12 +66,6 @@ def make_cdf(dist, params, data):
     arg = params[:-2]
     loc = params[-2]
     scale = params[-1]
-
-    # Get same start and end points of distribution
-    # start = dist.ppf(0.01, *arg, loc=loc, scale=scale) if arg else dist.ppf(0.01, loc=loc, scale=scale)
-    # end = dist.ppf(0.99, *arg, loc=loc, scale=scale) if arg else dist.ppf(0.99, loc=loc, scale=scale)
-    #
-    # x = np.linspace(start, end, size)
     y = dist.cdf(data, loc=loc, scale=scale, *arg)
 
     return y
@@ -94,7 +85,6 @@ def get_percentile(ux, dist, params, logtransformed=False):
 
     if logtransformed == True:
         x = 1 - 10 ** (-x)
-
     return x
 
 
@@ -111,10 +101,10 @@ def cal_prob(prec_500, prec_seas_grid, rt_s, rt_e):
         date_s = np.int32(date_s)
         date_e = season * 28+28
         date_e = np.int32(date_e)
-        prec_se = prec_seas_grid[date_s:date_e] #rt最大有28天
+        prec_se = prec_seas_grid[date_s:date_e]
         for i_ratio in range(80):
             num_recovery = 0
-            for rt in range(rt_s, rt_e):  # rt是1~7；8~14；15~21；22~28
+            for rt in range(rt_s, rt_e):  # rt:1~7；8~14；15~21；22~28
                 prec_sce = prec_se * ratio_all[i_ratio]
                 np_condition_rt = np.where((prec_500[:, 0] > rt) & (prec_500[:, 0] <= rt + 1))
                 prec_sim_rt = prec_sample[np_condition_rt]
@@ -124,12 +114,10 @@ def cal_prob(prec_500, prec_seas_grid, rt_s, rt_e):
     return prec_pro
 
 
-
-
 # %%
 def simvinecopula(drought_grid_simvine, max_serious_grid, prec_seas_grid, num_file, num_grid):
     """
-    #copula拟合
+    # fit copula
     :param drought_grid_simvine: [lat,lon,dm,rt,prec]
     :param max_serious_grid: [dm,rt,prec]
     :param prec_seas_grid
@@ -202,7 +190,6 @@ def simvinecopula(drought_grid_simvine, max_serious_grid, prec_seas_grid, num_fi
 
     return pro_grid_sce, pro_grid_climatology
 
-
 # %%
 def sim_prob(data_charc, max_serious_global, season_prec, num_file, phase):
     """
@@ -222,9 +209,6 @@ def sim_prob(data_charc, max_serious_global, season_prec, num_file, phase):
     pro_file_sce = np.zeros((0, 4, 4, 80))
     lat_lon_cal = np.zeros((0, 2))
     for ii in range(indices.shape[0] - 1):
-        ii=29  # 删
-
-        print((time.time()-time_s)/60)
         lat_num = (data_charc[indices[ii], 0] + 59.875) / 0.25
         lon_num = (data_charc[indices[ii], 1] - 0.125) / 0.25
         lat_num = lat_num.astype(int)
@@ -247,9 +231,7 @@ def sim_prob(data_charc, max_serious_global, season_prec, num_file, phase):
             lat_lon_cal = np.r_[
                 lat_lon_cal, np.array([data_charc[indices[ii], 0], data_charc[indices[ii], 1]]).reshape(1, 2)]
 
-
     return (pro_file_climatology, pro_file_sce, lat_lon_cal)
-
 
 
 # %%
@@ -270,11 +252,11 @@ def main(ncore,core):
         pro_file_climatology, pro_file_sce, lat_lon_cal = sim_prob(data_charc, max_serious_global, season_prec, num,
                                                                    phase)
         # save data
-        filename_output1 = '/hpctmp/e0920553/data/prob_season_0811/grid_' + phase + '/lat_lon_' + phase + '_' + str(
+        filename_output1 = '/prob_season_0811/grid_' + phase + '/lat_lon_' + phase + '_' + str(
             num) + '.npy'
-        filename_output2 = '/hpctmp/e0920553/data/prob_season_0811/clima_' + phase + '/prob_clima_' + phase + '_' + str(
+        filename_output2 = '/prob_season_0811/clima_' + phase + '/prob_clima_' + phase + '_' + str(
             num) + '.npy'
-        filename_output3 = '/hpctmp/e0920553/data/prob_season_0811/sce_' + phase + '/prob_sce_' + phase + '_' + str(
+        filename_output3 = '/prob_season_0811/sce_' + phase + '/prob_sce_' + phase + '_' + str(
             num) + '.npy'
 
         np.save(filename_output1, arr=lat_lon_cal)
