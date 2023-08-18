@@ -1,11 +1,10 @@
 import numpy as np
 
-
 # find the most severe drought event in the past 66 years.
-filename_his = 'J:\output\main charc_add rand\his\global_his_main_charc.npy'
+filename_his = 'global_his_main_charc.npy'
 main_charc_his = np.load(filename_his)
 main_charc_his = np.c_[main_charc_his, np.ones((main_charc_his.shape[0], 1))]
-filename_pres = 'J:\output\main charc_add rand\pres\global_pres_main_charc.npy'
+filename_pres = 'global_pres_main_charc.npy'
 main_charc_pres = np.load(filename_pres)
 main_charc_pres = np.c_[main_charc_pres, np.ones((main_charc_pres.shape[0], 1)) * 2]
 
@@ -14,12 +13,10 @@ main_charc_pres = np.c_[main_charc_pres, np.ones((main_charc_pres.shape[0], 1)) 
 def find_max_dm(main_charc_his, main_charc_pres, lat_lon_his, indices_his):
     max_serious = np.zeros((0, 7))
     for ii in range(indices_his.shape[0] - 1):
-        # for ii in range(195400,indices_his.shape[0] - 1):
         print(ii)
         lat = lat_lon_his[indices_his[ii], 0]
         lon = lat_lon_his[indices_his[ii], 1]
         main_charc_his_grid = main_charc_his[indices_his[ii]:indices_his[ii + 1], :]
-        # main_charc_pres_grid=np.zeros((0,6))
         main_charc_pres_grid = main_charc_pres[(main_charc_pres[:, 0] == lat) & (main_charc_pres[:, 1] == lon), :]
         if main_charc_pres_grid.shape[0] >= 20:
             main_charc_all_grid = np.concatenate((main_charc_his_grid, main_charc_pres_grid))
@@ -33,9 +30,10 @@ lat_lon_his = main_charc_his[:, 0:2]
 lat_lon_his_uni, indices_his = np.unique(lat_lon_his, return_index=True, axis=0)
 indices_his = np.r_[indices_his, lat_lon_his.shape[0]]
 indices_his = np.sort(indices_his)
-
 max_serious = find_max_dm(main_charc_his, main_charc_pres, lat_lon_his, indices_his)
-np.save('J:\\output\\main charc_add rand\\max_serious.npy',arr=max_serious)
+np.save('max_serious.npy',arr=max_serious)
+
+
 # %%
 max_serious = np.load('J:\\output\\main charc_add rand\\max_serious.npy')
 max_serious_global = np.zeros((600, 1440, 3)) # The latitude and longitude corresponding to the upper-left corner are 59.875°S and 0.125°E respectively.
@@ -47,4 +45,4 @@ lon = lon.astype(int)
 max_serious_global[lat, lon, 0] = max_serious[:, 2]
 max_serious_global[lat, lon, 1] = max_serious[:, 3]
 max_serious_global[lat, lon, 2] = max_serious[:, 4]
-np.save('J:\\output\\main charc_add rand\\max_serious_global.npy',arr=max_serious_global)
+np.save('max_serious_global.npy',arr=max_serious_global)
