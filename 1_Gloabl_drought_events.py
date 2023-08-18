@@ -3,7 +3,6 @@ import numpy as np
 import time
 import os
 
-
 # %%
 def judge_phase(SMPct_grid, Prec_grid, phase):
     """judge 1951-1983 or 1984-2016"""
@@ -19,7 +18,6 @@ def judge_phase(SMPct_grid, Prec_grid, phase):
         SMPct_i = SMPct_grid[12418:24472]  # 12418-24471:1951.1.1~1983.12.31
         Prec_i = Prec_grid[12418:24472]
     return SMPct_i, Prec_i
-
 
 # %%
 def judge_drought_SMPct(SMPct, SM_threshold, min_duration):
@@ -37,9 +35,7 @@ def judge_drought_SMPct(SMPct, SM_threshold, min_duration):
     nn = 0
     num_d = 0  # number of drought events
     one_event = np.zeros(10000)
-    # one_event[:] = None
     d_event = np.zeros((1000, 3))
-    # d_event[:] = None
     for ii in range(t):
         if SMPct[ii] < SM_threshold:
             nn += 1
@@ -56,13 +52,9 @@ def judge_drought_SMPct(SMPct, SM_threshold, min_duration):
             one_event[:] = np.zeros(10000)  # If the end date of the last event is the last day of a long sequence,
                                             # drought recovery cannot be determined, hence no output.
     d_event = d_event[:num_d, :]
-    # d_event = d_event[~np.isnan(d_event[:, 0]), :]
-    # d_event = np.array(d_event, dtype=int)
     return d_event
 
-
 # %%
-# nb.config.NUMBA_DEFAULT_NUM_THREADS = 2
 def drought_character(lat, lon, Prep, SMPct, d_event, delay_time, SM_threshold):
     """Calculate drought characteristics"""
     # input：
@@ -86,27 +78,21 @@ def drought_character(lat, lon, Prep, SMPct, d_event, delay_time, SM_threshold):
 
     n = d_event.shape[0]  # n represents the total count of drought events in this grid.
     grid_charct1 = np.zeros((n, 12), dtype="float32")
-    # for ii in prange(n):
     for ii in range(n):
         date_start = d_event[ii, 0]
         date_end = d_event[ii, 1]
         SM = SMPct[date_start:date_end + 1]
         min_SM = np.min(SM)
         min_date = np.where(SM == min_SM)[0]
-
         P = Prep[date_start + delay_time:date_end + delay_time + 1]  # Considering the delayed effect between precipitation and soil moisture, a lag of 1 day is added here.
-
         sum_p1 = np.sum(P[min_date[-1]:])  # Represents cumulative precipitation from the day after the drought peak to the day after the drought end.
         sum_p2 = np.sum(P)  # Represents cumulative precipitation during the period from the day after the drought start date to the day after the drought end date.
         grid_charct1[ii, :] = np.array([lat, lon, ii, d_event[ii, 0], d_event[ii, 1], d_event[ii, 2],
                                         min_date[-1], SM_threshold - min_SM, d_event[ii, 2] - min_date[-1],
                                         sum_p1, sum_p2, SMPct[date_end + 1]])
-
     return grid_charct1, n
 
-
 # %%
-
 def region_drought_charc(data_SMPct, data_Prcp, SM_threshold, min_duration, lat_area, lon_area, event_num_his,
                          event_num_pres):
     """all events in the region"""
@@ -145,35 +131,28 @@ def region_drought_charc(data_SMPct, data_Prcp, SM_threshold, min_duration, lat_
 
 
 # %%
-# 设置参数
 SM_threshold = 20
 min_duration = 14
 delay_time = 1
-# dv = pd.date_range(start="1950-01-01", end="2016-12-31", freq="D")
-
 start_time = time.time()
 event_num_his = np.empty((600, 1440))
 event_num_his[:] = None
 event_num_pres = np.empty((600, 1440))
 event_num_pres[:] = None
 
-path1 = 'J:\\output\\drought_events(2)\\his'
-path2 = 'J:\\output\\drought_events(2)\\pres'
+path1 = 'J:\\output\\his'
+path2 = 'J:\\output\\pres'
 
 num_empty = 0
-for lat_area in range(0, 1):
-
+for lat_area in range(10):
     for lon_area in range(20):
         data_SMPct = np.load(r"J:\GDFC\SMPct\numpy2\SMPct" + str(lat_area) + "-" + str(lon_area) + ".npy")
-
         if np.isnan(data_SMPct).all():
             print(lat_area, lon_area, 'Nan')
         else:
-
-            data_Prcp = np.load(r"J:\GDFC\Prcp\numpy2\Prcp" + str(lat_area) + "-" + str(lon_area) + ".npy")
+            data_Prcp = np.load(r"J:\\GDFC\\Prcp\\numpy2\\Prcp" + str(lat_area) + "-" + str(lon_area) + ".npy")
             print(lat_area, lon_area)
             print((time.time() - start_time) / 60)
-
             grid_charct_all_his, grid_charct_all_pres, event_num_his, event_num_pres = region_drought_charc(data_SMPct,
                                                                                                             data_Prcp,
                                                                                                             SM_threshold,
@@ -192,6 +171,6 @@ for lat_area in range(0, 1):
             grid_charct_all_pres = np.empty((1, 12))
             grid_charct_all_pres[:] = None
 
-np.save('J:\\output\\drought_events(2)\\his\\his_event.npy', arr=event_num_his)
-np.save('J:\\output\\drought_events(2)\\pres\\pres_event.npy', arr=event_num_pres)
+np.save('J:\\output\\his\\his_event.npy', arr=event_num_his)
+np.save('J:\\output\\pres\\pres_event.npy', arr=event_num_pres)
 
