@@ -33,18 +33,7 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     return new_cmap
 
 
-cbformat = mticker.ScalarFormatter()
-cbformat.set_powerlimits((-2, 2))  # Set size thresholds for scientific notation.好像是科学计数法的大小阈值（10^(-2)~10^2)
-lat = np.arange(89.875, -90, -0.25)
-lon = np.arange(-179.875, 180, 0.25)
-
-
 def add_south(data):
-    """
-    #原本是北纬90到南纬60，现补充到南纬90
-    :param data:
-    :return:
-    """
     data_nan = np.zeros((120, 1440))
     data_nan[:] = np.nan
     datanew = np.r_[data, data_nan]
@@ -88,13 +77,16 @@ def plot_settings():
 font = {'family': 'Myriad Pro',
         'weight': 'normal'}
 # %%
-filename_delta = 'J:\output\prob_season_0811\global\map_delta_sign.npy'
-filename_his = 'J:\output\prob_season_0811\global\map_his_climatology.npy'
-filename_pres = 'J:\output\prob_season_0811\global\map_pres_climatology.npy'
-region = nc.Dataset(r'E:\phd\data\climate region\region.id.nc', 'r')
+filename_delta = 'J:\\output\\map_delta_sign.npy'
+filename_his = 'J:\\output\\map_his_climatology.npy'
+filename_pres = 'J:\\output\\map_pres_climatology.npy'
+region = nc.Dataset(r'region.id.nc', 'r')
 RID = region.variables['rid'][:].data
 RID = np.flipud(RID)
-
+cbformat = mticker.ScalarFormatter()
+cbformat.set_powerlimits((-2, 2))  # Set size thresholds for scientific notation.（10^(-2)~10^2)
+lat = np.arange(89.875, -90, -0.25)
+lon = np.arange(-179.875, 180, 0.25)
 data_delta_sign = np.load(filename_delta)
 data_his = np.load(filename_his)
 data_pres = np.load(filename_pres)
@@ -104,19 +96,16 @@ sea = ['MAM', 'JJA', 'SON', 'DJF']
 # for i_rt in range(4):
 i_rt = 1
 title = 'RT=' + RT[i_rt]
-# Define the contour levels to use in plt.contourf
 
 # Define the figure and each axis for the 3 rows and 3 columns
 fig, axs = plt.subplots(nrows=2, ncols=3,
                         subplot_kw={'projection': ccrs.Robinson()},  # Robinson()},  # PlateCarree()},
                         figsize=(11, 9))
 
-# axs is a 2 dimensional array of `GeoAxes`.  We will flatten it into a 1-D array
 axs = axs.flatten()
 num = -1
 # Loop over all of the models
-for i_sea in np.array([0,2]):
-
+for i_sea in range(4):
     for col in range(3):
         num += 1
         cmap = plt.get_cmap('GnBu')
@@ -153,9 +142,6 @@ for i_sea in np.array([0,2]):
         else:
             cs = axs[num].contourf(lon, lat, datanew, cmap=new_cmap, levels=bounds, extend='max',
                                    transform=ccrs.PlateCarree())
-        cs2 = axs[num].pcolormesh(lon, lat, data_nan_new, shading='auto', norm=norm_nan, cmap=cmap_nan,
-                                                               transform=ccrs.PlateCarree())
-
 
         # Draw the coastines for each subplot
         axs[num].coastlines(lw=0.2, color='#696969')
@@ -195,18 +181,14 @@ fig.subplots_adjust(bottom=0.18, left=0.1, right=0.95,
 
 # Add a big title at the top
 plt.suptitle(title)
-# plt.show()
-plt.savefig(
-    'J:\\output\\prob_season_0811\\plot\\finial\\results_1\\MAM_SON ' + title + 'legend.jpg',
-    dpi=1000, bbox_inches='tight')
+plt.show()
 
-plt.close("all")
 
 #%%
 #plot_bar
-filename1 = 'J:\\output\\prob_season_0811\\global\\global_clima_his_clima_mean.npy'
-filename2 = 'J:\\output\\prob_season_0811\\global\\global_clima_pres_clima_mean.npy'
-filename3 = 'J:\\output\\prob_season_0811\\global\\global_clima_pvalue_ks_mask.npy'
+filename1 = 'J:\\output\\global_clima_his_clima_mean.npy'
+filename2 = 'J:\\output\\global\\global_clima_pres_clima_mean.npy'
+filename3 = 'J:\\output\\global\\global_clima_pvalue_ks_mask.npy'
 
 data_his0 = np.load(filename1)
 data_his0[(data_his0 == -111) | (data_his0 == -999)] = np.nan
@@ -288,14 +270,6 @@ array = [  # the "picture" (1 == subplot A, 2 == subplot B, etc.)
     [9, 10, 21, 21, 21, 21, 11, 12],
     [13, 14, 15, 16, 17, 18, 19, 20],
 ]
-x_s=0.157
-x_e=0.8388
-y_s=0.9
-y_e=0.317
-
-x=np.linspace(x_s,x_e,4)
-y=np.linspace(y_s,y_e,3)
-rid_name_location=np.array([np.r_[x,x[0],x[3],x],np.r_[y[0],y[0],y[0],y[0],y[1],y[1],y[2],y[2],y[2],y[2]]])
 
 for i_rt in range(4):
     fig, axs = pplt.subplots(
@@ -314,13 +288,7 @@ for i_rt in range(4):
         ax0.barh(index, column0, width=width0, align='center', color='#457B9D',  # color=(122/255, 162/255, 170/255),
                  zorder=10)  # barh() would draw horizontal bar plots.
 
-        ax1.barh(index, column1, width=width1, align='center', color='#C47C70', zorder=10)
-        # if ii == 0 or ii == 1 or ii == 2 or ii == 3:
-        #     ax0.set_title(title0, fontsize=15, pad=7, color=color_blue, **hfont)  # pad控制title的位置。
-        #     ax1.set_title(title1, fontsize=15, pad=7, color=color_red, **hfont)
-
-        # ax0.set_title(imate_region[RID_neworder[ii]-1], fontsize=15, loc='left', pad=3, **hfont)
-        ax1.text(rid_name_location[0,ii], rid_name_location[1,ii], imate_region[RID_neworder[ii]-1], fontsize=17, family='Myriad Pro', fontweight='bold', ha='center', color='#525252', transform=fig.transFigure)
+        ax1.barh(index, column1, width=width1, align='center', color='#C47C70', zorder=10)        
         ax0.set_xticks([0, 25, 50])
         ax0.set_xlim(0, 65)
         ax1.set_xticks([0, 25, 50])
@@ -330,13 +298,7 @@ for i_rt in range(4):
         ax1.axvline(share_global[i_rt, 0] * 100, color='grey', linestyle='--')
         # If you have positive numbers and want to invert the x-axis of the left plot
         ax0.invert_xaxis()
-
         ax0.invert_yaxis()
-        # ax1.invert_yaxis()
-
-        # ax0.set(yticks=index, yticklabels=index)
-        # ax0.yaxis.tick_left()
-        # ax0.tick_params(axis='y', colors='white')  # tick color
         ax1.axes.yaxis.set_visible(False)
 
         if ii == 0 or ii == 4 or ii == 6:
@@ -350,7 +312,6 @@ for i_rt in range(4):
             label.set(fontsize=15, color=font_color, **hfont)
         for label in (ax1.get_xticklabels()):
             label.set(fontsize=15, color=font_color, **hfont)
-
 
     # title = sea[i_sea]
     title = RT[i_rt]
@@ -409,25 +370,23 @@ cmap = plt.get_cmap('YlOrRd')
 new_cmap = truncate_colormap(cmap, minval=0.05, maxval=1.0, n=100)
 bounds = np.linspace(0, 10, 11)
 norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
-cmap_nan = ListedColormap(['#FFFFFF'])
-norm_nan = mpl.colors.Normalize(vmin=0, vmax=2)
-norm_sea = mpl.colors.Normalize(vmin=-1, vmax=1)
+
 
 for i_rt in range(4):
     data_his = np.load(
-        'J:\\output\\prob_season_0811\\global\\regression\\his_grid_global_coef_rt(' + RT[i_rt] + ').npy')
+        'J:\\output\\regression\\his_grid_global_coef_rt(' + RT[i_rt] + ').npy')
     p_his = np.load(
-        'J:\\output\\prob_season_0811\\global\\regression\\his_grid_global_coef_pvalue_rt(' + RT[i_rt] + ').npy')
+        'J:\\output\\regression\\his_grid_global_coef_pvalue_rt(' + RT[i_rt] + ').npy')
     data_his[p_his > 0.05] = np.nan
 
     data_pres = np.load(
-        'J:\\output\\prob_season_0811\\global\\regression\\pres_grid_global_coef_rt(' + RT[i_rt] + ').npy')
+        'J:\\output\\regression\\pres_grid_global_coef_rt(' + RT[i_rt] + ').npy')
     p_pres = np.load(
-        'J:\\output\\prob_season_0811\\global\\regression\\pres_grid_global_coef_pvalue_rt(' + RT[i_rt] + ').npy')
+        'J:\\output\\regression\\pres_grid_global_coef_pvalue_rt(' + RT[i_rt] + ').npy')
     data_pres[p_pres > 0.05] = np.nan
 
-    grid_his = np.load('J:\\output\\prob_season_0811\\global\\regression\\his_grid_need_cal.npy')
-    grid_pres = np.load('J:\\output\\prob_season_0811\\global\\regression\\pres_grid_need_cal.npy')
+    grid_his = np.load('J:\\output\\regression\\his_grid_need_cal.npy')
+    grid_pres = np.load('J:\\output\\regression\\pres_grid_need_cal.npy')
     lat_his = grid_his[0, :].astype(int)
     lon_his = grid_his[1, :].astype(int)
 
@@ -450,22 +409,17 @@ for i_rt in range(4):
                             figsize=(20, 13))
     num = -1
     axs=axs.flatten()
-    # axs is a 2 dimensional array of `GeoAxes`.  We will flatten it into a 1-D array
     i_sea = 1
-    # color = sns.color_palette("BuPu", 11)
     for coef_map in [coef_map_his, coef_map_pres]:
         for i_interval in [1, 4]:
             num+=1
             ax1 = axs[num]
-
             data1 = coef_map[:, :, i_sea, i_interval]
-
             np_condition = np.where((np.isnan(data1)) & (RID > 0) & (RID < 11))
             data_nan = np.empty((600, 1440))
             data_nan[:] = np.nan
             data_nan[np_condition] = 1
             data_nan_new = add_south(data_nan)
-            # data2 = coef_map_pres[:, :, i_sea, i_interval]
             coef_25_50_75_oridinary = classify_region(RID, data1, neworder)
             order_descend=np.flipud(np.argsort(coef_25_50_75_oridinary[1, :10]))
             coef_25_50_75=np.zeros((3,11))
@@ -478,12 +432,10 @@ for i_rt in range(4):
                 region_new_order.append(region_new[order_descend[id]])
                 newcolor_order.append(newcolor[order_descend[id]])
 
-            # data2_region, percent_pres, coef_max_pres = classify_region(RID, data2, num_grid_pres)
             x = np.arange(10)
             earth=np.zeros((720,1440))
             # plot map
             data1_south = add_south(data1)
-            # cs0=ax1.pcolormesh(lon, lat, earth, shading='suto',norm=norm_sea,cmap=cmap_nan,transform=ccrs.PlateCarree())
             cs1 = ax1.pcolormesh(lon, lat, data1_south, shading='auto', norm=norm, cmap=new_cmap,
                                  transform=ccrs.PlateCarree())
 
@@ -491,12 +443,10 @@ for i_rt in range(4):
                                  transform=ccrs.PlateCarree())
             # Draw the coastines for each subplot
             ax1.coastlines(lw=0.2, color='#696969')
-            # ax2.coastlines(lw=0.2, color='#696969')
             ax1.add_feature(cfeat.LAND.with_scale('110m'), facecolor='#CDCDCD', alpha=0.8, edgecolor='#CDCDCD',
                             linewidth=0.01)  # ,edgecolor='')#color='#D3D3D3'
 
             gl = ax1.gridlines(draw_labels=False, lw=0.00007, color='#C0C0C0', linestyle='--', alpha=0.5)
-
             ax1.patch.set_facecolor('white')
             ax1.patch.set_alpha(1)
             if num==3:
@@ -513,13 +463,8 @@ for i_rt in range(4):
     title = 'RT=' + RT[i_rt] + ' ' + sea[i_sea]
     # Add a big title at the top
     plt.suptitle(title)
-    # fig.patch.set_alpha(0)
-    # plt.show()
-    plt.savefig(
-        'J:\\output\\prob_season_0811\\plot\\finial\\results_3\\his_pres_boxplot_coef_JJA_' + title + '.png',
-        dpi=600, bbox_inches='tight', transparent=True)
+    plt.show()
 
-    plt.close("all")
 
 # %%
 # box plot
@@ -610,10 +555,7 @@ for i_rt in range(4):
                 region_new_order.append(region_new[order_descend[id]])
                 newcolor_order.append(newcolor[order_descend[id]])
 
-
-
             yerror = abs(coef_25_50_75[::2, :10] - np.tile(coef_25_50_75[1, :10], [2, 1]))
-            # axins2 = ax2.inset_axes(potion)
             for pos, y, err, err1, colors_bar in zip(x, coef_25_50_75[1, :10], yerror[0, :], yerror[1, :], newcolor_order):
                 ax1.errorbar(pos, y, np.array([err, err1]).reshape(2, 1), fmt='o',
                                 lw=2, capsize=5, capthick=3, markersize=17,elinewidth=2,
@@ -637,11 +579,8 @@ for i_rt in range(4):
             # axins2.set(ylim=(0, 0.25))
 
             ax1.set(xlabel=None)
-            # axins2.set(xlabel=None)
             ax1.set(ylabel=None)
-            # axins2.set(ylabel=None)
             ax1.patch.set_alpha(0.0)
-            # axins2.patch.set_alpha(0.0)
             [ax1.spines[loc_axis].set_visible(False) for loc_axis in ['top', 'right']]
             ax1.tick_params(bottom=False, top=False, left=True, right=False)
             # axins1.tick_params(top=False, bottom=False, left=False, right=False)
@@ -654,8 +593,4 @@ for i_rt in range(4):
     plt.suptitle(title)
     fig.subplots_adjust(bottom=0.018, left=0.01,
                         wspace=0.1, hspace=0.3)
-    plt.savefig(
-        'J:\\output\\prob_season_0811\\plot\\finial\\results_3\\2his_pres_boxplot_coef_JJA_' + title + '.png',
-        dpi=600, bbox_inches='tight', transparent=True)
-
-    plt.close("all")
+    plt.show()
