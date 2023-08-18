@@ -4,7 +4,6 @@ import scipy.stats as st
 from rpy2.robjects.packages import importr
 from rpy2.robjects import r, pandas2ri
 import rpy2
-
 pandas2ri.activate()
 importr('VineCopula')
 importr('copula')
@@ -25,17 +24,11 @@ def best_fit_distribution(data, jj):
     best_distribution = st.norm
     best_params = (0.0, 1.0)
     best_KS = np.inf
-    # cvm = -999
-    # Estimate distribution parameters from data
     for distribution in Distribution:
-        # print(distribution)
-        # Try to fit the distribution
-
         try:
             # Ignore warnings from data that can't be fit
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
-
                 # fit dist to data
                 params = distribution.fit(data)
 
@@ -54,27 +47,23 @@ def best_fit_distribution(data, jj):
 
         except Exception:
             pass
-
     return (best_distribution.name, best_params)
 
 
 # %%
 def make_cdf(dist, params, data):
     """Generate distributions's Probability Distribution Function """
-
     # Separate parts of parameters
     arg = params[:-2]
     loc = params[-2]
     scale = params[-1]
     y = dist.cdf(data, loc=loc, scale=scale, *arg)
-
     return y
 
 
 # %%
 def get_percentile(ux, dist, params, logtransformed=False):
     """ Get the percentile of variable x based on its best marginal distribution"""
-
     # Separate parts of parameters
     arg = params[:-2]
     loc = params[-2]
@@ -95,7 +84,6 @@ def cal_prob(prec_500, prec_seas_grid, rt_s, rt_e):
     prec_pro[:] = np.nan
     ratio_all = np.linspace(0.025, 2, 80)
     prec_sample=prec_500[:,1]
-
     for season in range(4):
         date_s=season * 28
         date_s = np.int32(date_s)
@@ -180,7 +168,6 @@ def simvinecopula(drought_grid_simvine, max_serious_grid, prec_seas_grid, num_fi
                 prec_pro = cal_prob(prec_500, prec_seas_grid, rt_s, rt_e)
                 pro_grid_clima_sce[ii, :, :, sample_num] = prec_pro
 
-
         pro_grid_climatology = pro_grid_clima_sce[:, :, 39, :]  # the mean for conducting significance testing.
         pro_grid_sce = np.mean(pro_grid_clima_sce, axis=3)
 
@@ -200,7 +187,7 @@ def sim_prob(data_charc, max_serious_global, season_prec, num_file, phase):
     :param num_file
     :return:
     """
-
+    
     lat_lon = data_charc[:, 0:2]
     lat_lon_uni, indices = np.unique(lat_lon, return_index=True, axis=0)
     indices = np.r_[indices, lat_lon.shape[0]]
@@ -238,14 +225,14 @@ def sim_prob(data_charc, max_serious_global, season_prec, num_file, phase):
 # main code
 ncore=420
 def main(ncore,core):
-    filename_input1 = './data/prob_season_0811/global/global_prec_seas.npy'
+    filename_input1 = 'global_prec_seas.npy'
     season_prec = np.load(filename_input1)
     filename_input2 = './data/main_charc_add_rand/max_serious_global.npy'
     max_serious_global = np.load(filename_input2)
     num=core
     for phase in ['his']:
         # load data
-        filename_input3 = './data/main_charc_add_rand/' + phase + '_reslice/' + phase + '_' + str(num) + '.npy'
+        filename_input3 = './main_charc_add_rand/' + phase + '_reslice/' + phase + '_' + str(num) + '.npy'
         print(phase, num)
         data_charc = np.load(filename_input3)  # [lat,lon,dm,rt,prec,dm_date]
         # calculate
